@@ -1,0 +1,75 @@
+import jsonlines
+import nltk
+import matplotlib.pyplot as plt
+from collections import Counter
+
+# Legislatur 19
+legislatur = 19
+
+# Leere Liste generieren
+alleReden = []
+
+with jsonlines.open(f"C:/Users/User/Desktop/Politische Debatten/data/speeches_19.jsonl") as f:
+    for line in f.iter():
+        alleReden.append(line)
+
+# Nach Datum sortieren
+alleReden.sort(key=lambda x: x["date"])
+
+
+#  Funktion für Textsuche:
+def find_speeches_with_word(search_term, speeches):
+    filtered_speeches = []
+    for speech in speeches:
+        if (search_term in speech['text']):
+            filtered_speeches.append(speech)
+    return filtered_speeches
+
+def find_sentences_with_word(search_term, speeches):
+    sents_with_words = []
+    for speech in speeches:
+        sent_list = nltk.sent_tokenize(speech['text'])
+        for sent in sent_list:
+            if search_term in sent:
+                sents_with_words.append(sent)
+    return sents_with_words
+
+wort = "Schwangerschaftsabbruch"
+
+# Suchfunktion und Untermenge
+untermenge = find_speeches_with_word(wort, alleReden)
+satz_liste = find_sentences_with_word(wort,untermenge)
+
+print(f'In {len(untermenge)} Reden gibt es {len(satz_liste)} Sätze, die {wort} enthalten:')
+
+# Schleife, um die relevanten Informationen aus den Reden zu extrahieren und zur input_list hinzuzufügen
+input_list = [speech['name'] for speech in untermenge]
+
+# Counter, um die Häufigkeit der Namen zu zählen
+häufigkeiten = Counter(input_list)
+
+# Anzeigen der Namen und ihrer Häufigkeiten
+for name, häufigkeit in häufigkeiten.items():
+    print(f'{name}: {häufigkeit} Reden')
+
+# Ergebnisse nach Häufigkeiten absteigend sortieren und Top10 Politikerinnen festlegen
+top_n = 10  
+top_politikerinnen = dict(häufigkeiten.most_common(top_n))
+
+# Extrahieren der Häufigkeiten und Namen
+namen = list(top_politikerinnen.keys())
+häufigkeiten_werte = list(top_politikerinnen.values())
+
+# Farbpalette, die an Parteinfarben angepasst ist, kann erst danach angepasst werden 
+farben = ['limegreen', 'mediumvioletred', 'yellow', 'black', 'black', 'black', 'red', 'blue', 'mediumvioletred','black']
+
+# Histogramm erstellen 
+plt.figure(figsize=(12, 6))
+plt.barh(namen, häufigkeiten_werte, color=farben)
+plt.xlabel('Anzahl der Reden')
+plt.ylabel('Politikerinnen')
+plt.title(f'Top-{top_n} Politikerinnen mit höchstem Redeanteil zu "{wort}" in der 19. Legislaturperiode')
+plt.gca().invert_yaxis()  # Um die Politikerinnen mit der höchsten Häufigkeit oben anzuzeigen
+
+# Anzeigen des Histogramms
+plt.show()
