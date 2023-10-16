@@ -1,0 +1,59 @@
+import json
+import jsonlines
+import nltk
+from collections import Counter
+
+legislatur = 19
+
+alleReden = []
+
+with jsonlines.open(f"C:/Users/User/Desktop/Politische Debatten/data/speeches_19.jsonl") as f:
+    for line in f.iter():
+        alleReden.append(line)
+
+#Nach Datum sortieren
+alleReden.sort(key= lambda x:x["date"])
+
+#Wir lassen uns zeigen, wieviele Reden vorhanden sind
+print(f" Die Liste enthält {len(alleReden)} Reden")
+print(f"\n")
+
+#Funktion, die uns Reden zeigt, die String enthalten
+def find_speeches_with_word(search_term, speeches):
+    filtered_speeches = []
+    for speech in speeches:
+        if ( search_term in speech['text'] ):
+            filtered_speeches.append(speech)
+    return filtered_speeches
+
+#such_wort1 = "Abtreibung"
+#untermenge= find_speeches_with_word(such_wort1,alleReden)
+#print(len(untermenge))
+
+#Wie viele Reden sind enthalten?
+#print(f"Diese Liste enthält { len(untermenge) } Reden.")
+#print(f"\n")
+
+
+def filter_speeches_for(what, search_term, speeches):
+    filtered_speeches = []
+    for speech in speeches:
+        if search_term in speech[what]:
+            filtered_speeches.append(speech)
+
+    filtered_speeches.sort(key=lambda x: x['date'])
+    return filtered_speeches
+
+#Es wäre auch interessant zu sehen, welche Parteien generell über Abtreibung gesprochen haben
+such_wort1 = "Abtreibung" #"219a" "Schwangerschaftsabbruch"
+
+parties = ["SPD","FDP","CDU","LINKE","GRÜNEN","AfD", "unknown"]
+
+frequencies1 = []
+for party in parties:
+    untermenge = find_speeches_with_word(such_wort1, alleReden)
+    untermenge = filter_speeches_for('party', party, untermenge)
+    print(f'Die {party} hat {len(untermenge)} Reden mit "{such_wort1}" gehalten.')
+    frequencies1.append(len(untermenge))
+
+print('\n')
