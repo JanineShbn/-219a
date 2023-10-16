@@ -1,0 +1,91 @@
+import json
+import jsonlines
+import nltk
+from collections import Counter
+
+legislatur = 19
+
+alleReden = []
+
+#File öffnen
+with jsonlines.open(f"C:/Users/User/Desktop/Politische Debatten/data/speeches_19.jsonl") as f:
+    for line in f.iter():
+        alleReden.append(line)
+
+#Nach Datum sortieren
+alleReden.sort(key= lambda x:x["date"])
+
+
+#Funktion, die uns Reden zeigt, die String enthalten
+def find_speeches_with_word(search_term, speeches):
+    filtered_speeches = []
+    for speech in speeches:
+        if ( search_term in speech['text'] ):
+            filtered_speeches.append(speech)
+    return filtered_speeches
+
+such_wort = "219a"
+untermenge= find_speeches_with_word(such_wort,alleReden)
+
+#Wie viele Reden sind enthalten?
+#print(f"Diese Liste enthält { len(untermenge) } Reden.")
+#print(f"\n")
+
+#Funktion um alle Sätze zu sehen, in denen String vorkommt
+def find_sentences_with_word(search_term, speeches):
+    sents_with_word = []
+    for speech in speeches:
+        sent_list = nltk.sent_tokenize(speech['text'])
+        for sent in sent_list:
+            if search_term in sent:
+                sents_with_word.append(sent)
+    return sents_with_word
+
+#Ich wähle String "219a"
+#satz_liste = find_sentences_with_word(such_wort,untermenge)
+#print(f'Es gibt {len(satz_liste)} Sätze zu {such_wort}:')
+#print('\n')
+
+#Ich möchte es mir anzeigen lassen
+#wir_wollen = False
+#if wir_wollen:
+ #   for satz in satz_liste:
+ #       print(satz)
+  #      print('\n')
+
+
+##Ich möchte die Reden von Anke Domscheit-Berg zu §219a sehen
+#Zuerst die Funktion, um die Reden zu filtern
+def filter_speeches_for(what, search_term, speeches):
+    filtered_speeches = []
+    for speech in speeches:
+        if search_term in speech[what]:
+            filtered_speeches.append(speech)
+
+    filtered_speeches.sort(key=lambda x: x['date'])
+    return filtered_speeches
+
+#Suche nach Anke Domscheit-Berg
+suche_nach = "Anke Domscheit-Berg"
+untermenge = filter_speeches_for('name', suche_nach, alleReden)
+
+#Wie viele Reden sind enthalten?
+print(f'Diese Liste (Suche nach {suche_nach}) enthält {len(untermenge)} Reden')
+print(f'\n')
+
+wort = "219a"
+
+untermenge = find_speeches_with_word(wort, alleReden)
+
+#Ich suche nach:
+suche_nach = "Anke Domscheit-Berg"
+untermenge = filter_speeches_for("name", suche_nach, untermenge)
+satz_liste = find_sentences_with_word(wort,untermenge)
+
+print(f"In {len(untermenge)} Reden gibt es {len(satz_liste)} Sätze von {suche_nach}, die {wort} enthalten:")
+print("\n")
+
+#Ich möchte sie sehen
+for sx,satz in enumerate(satz_liste):
+    print(f" Satz {sx+1}: {satz}")
+    print(f"\n")
